@@ -12,6 +12,21 @@ export default function App() {
 
     const gettSizeOfTheImageToTheScreen = (item) => parseInt(((W / item.width) * item.height), 10)
 
+
+
+    const cumulativeHeights = React.useMemo(() => {
+        return IMAGES.reduce((acc, item, index) => {
+            const currentHeight = gettSizeOfTheImageToTheScreen(item);
+            acc.push((acc[index - 1] || 0) + currentHeight); // Add current height to the previous sum
+            return acc;
+        }, []);
+    }, [IMAGES, W]);
+
+
+
+    const gettSizeOfAllImagesToTheScreen = (index) => cumulativeHeights[index - 1] || 0; // Return 0 for index 0
+
+
     return (
         <FlatList
             data={IMAGES}
@@ -21,7 +36,12 @@ export default function App() {
             keyExtractor={(item) => `${item.id}`}
             getItemLayout={(data, index) => {
                 const ITEM_HEIGHT = gettSizeOfTheImageToTheScreen(data[index]);
-                return { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
+
+                return {
+                    length: ITEM_HEIGHT,
+                    offset: gettSizeOfAllImagesToTheScreen(index),
+                    index,
+                };
             }}
             renderItem={({ item }) => (
                 <Image
